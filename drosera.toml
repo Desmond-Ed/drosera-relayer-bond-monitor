@@ -1,0 +1,16 @@
+ethereum_rpc = "https://rpc.hoodi.ethpandaops.io"
+drosera_rpc = "https://relay.hoodi.drosera.io"
+eth_chain_id = 560048
+drosera_address = "0x91cB447BaFc6e0EA0F4Fe056F5a9b1F14bb06e5D"
+
+[traps.relayer_bond_monitor]
+path = "out/RelayerBondMonitor.sol/RelayerBondMonitor.json"
+constructor_args = ["0xA5Cc2eC93873c7393a220F25cDDc71f2307FCD2D"]
+response_contract = "0xA5Cc2eC93873c7393a220F25cDDc71f2307FCD2D"
+response_function = "setBond(uint256)"
+cooldown_period_blocks = 50
+min_number_of_operators = 1
+max_number_of_operators = 3
+block_sample_size = 1
+private = false
+address = "0xb75c2a971abEa4370614edAe64049F6124464B14"
