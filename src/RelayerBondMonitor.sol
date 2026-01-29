@@ -1,32 +1,43 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "lib/drosera-contracts/interfaces/ITrap.sol";
-
-interface IMockBondManager {
-    function totalBond() external view returns (uint256);
+interface IBondManager {
+    function totalBonded() external view returns (uint256);
 }
 
-contract RelayerBondMonitor is ITrap {
-    address public constant TARGET_CONTRACT = 0x66cdD40e95366C298e990a9b5a2469bA26729480;
-    uint256 public constant BOND_THRESHOLD = 100 ether;
-
+contract RelayerBondMonitor {
+    address public constant TARGET_CONTRACT = 0xA5Cc2eC93873c7393a220F25cDDc71f2307FCD2D;
+    
+    // Workshop 3: Trigger at 75 ETH, restore to 100 ETH
+    uint256 public constant TRIGGER_THRESHOLD = 75 ether;
+    uint256 public constant RECOVERY_VALUE = 100 ether;
+    
     constructor() {}
-
-    function collect() external view override returns (bytes memory) {
-        uint256 bond = IMockBondManager(TARGET_CONTRACT).totalBond();
-        return abi.encode(bond);
+    
+    function collect() external view returns (bytes memory) {
+        (bool success, bytes memory returnData) = TARGET_CONTRACT.staticcall(
+            abi.encodeWithSignature("totalBonded()")
+        );
+        
+        if (!success || returnData.length != 32) {
+            return bytes("");
+        }
+        
+        uint256 currentBond = abi.decode(returnData, (uint256));
+        return abi.encode(currentBond);
     }
-
-    function shouldRespond(bytes[] calldata data)
-        external
-        pure
-        override
-        returns (bool, bytes memory)
-    {
-        if (data.length == 0) return (false, bytes("No data"));
+    
+    function shouldRespond(bytes[] calldata data) external pure returns (bool, bytes memory) {
+        if (data.length == 0 || data[0].length == 0) {
+            return (false, bytes(""));
+        }
+        
         uint256 currentBond = abi.decode(data[0], (uint256));
-        if (currentBond < BOND_THRESHOLD) return (true, abi.encode(currentBond));
-        return (false, bytes("Bond OK"));
+        
+        if (currentBond < TRIGGER_THRESHOLD) {
+            return (true, abi.encode(RECOVERY_VALUE));
+        }
+        
+        return (false, bytes(""));
     }
 }
