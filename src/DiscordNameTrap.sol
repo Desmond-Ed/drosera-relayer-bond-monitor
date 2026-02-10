@@ -37,23 +37,17 @@ contract DiscordNameTrap is ITrap {
             return (false, bytes(""));
         }
         
-        // Try to decode, return false if it fails
-        try this.decodeData(data[0]) returns (bool active, string memory name) {
-            if (!active || bytes(name).length == 0) {
-                return (false, bytes(""));
-            }
-            return (true, abi.encode(name));
-        } catch {
+        // Decode with length check
+        if (data[0].length < 64) { // Minimum size for (bool, string)
             return (false, bytes(""));
         }
-    }
-    
-    // Helper function for safe decoding
-    function decodeData(bytes calldata data) 
-        external 
-        pure 
-        returns (bool active, string memory name) 
-    {
-        (active, name) = abi.decode(data, (bool, string));
+        
+        (bool active, string memory name) = abi.decode(data[0], (bool, string));
+        
+        if (!active || bytes(name).length == 0) {
+            return (false, bytes(""));
+        }
+        
+        return (true, abi.encode(name));
     }
 }
