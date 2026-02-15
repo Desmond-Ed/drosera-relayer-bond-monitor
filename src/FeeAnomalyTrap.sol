@@ -11,29 +11,31 @@ interface IERC20 {
  * @title FeeAnomalyTrap
  * @notice Monitors token supply changes to detect anomalies
  * @dev Implements ITrap with hardened collect() and shouldRespond()
+ * 
+ * FIXED based on team feedback:
+ * - No constructor args (Drosera deploys in shadow-fork)
+ * - Hardcoded TOKEN and THRESHOLD
+ * - collect() uses staticcall (won't brick if token reverts)
+ * - shouldRespond() checks lengths before decode (planner-safe)
+ * - shouldRespond() is pure (not view)
  */
 contract FeeAnomalyTrap is ITrap {
-    address public immutable TOKEN;
-    uint256 public immutable SUPPLY_CHANGE_THRESHOLD; // Percentage in basis points (e.g., 1000 = 10%)
+    // Hardcoded values - change these and redeploy for different tokens
+    // Example: USDC on mainnet
+    address public constant TOKEN = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    
+    // Threshold in basis points (1000 = 10% change triggers alert)
+    uint256 public constant SUPPLY_CHANGE_THRESHOLD = 1000;
     
     struct CollectOutput {
         uint256 supply;
     }
     
-    /**
-     * @param _token The ERC20 token address to monitor
-     * @param _threshold Supply change threshold in basis points (e.g., 1000 = 10% change triggers alert)
-     */
-    constructor(address _token, uint256 _threshold) {
-        require(_token != address(0), "Invalid token address");
-        TOKEN = _token;
-        SUPPLY_CHANGE_THRESHOLD = _threshold;
-    }
+    constructor() {}
     
     /**
      * @notice Collects current token supply with hardened safety checks
-     * @dev FIX #1: Uses extcodesize guard + staticcall to prevent bricking
-     * @return Encoded CollectOutput or empty bytes on failure
+     * @dev Uses extcodesize + staticcall to prevent bricking if TOKEN reverts
      */
     function collect() external view override returns (bytes memory) {
         // Check if TOKEN is a contract
@@ -63,29 +65,25 @@ contract FeeAnomalyTrap is ITrap {
     
     /**
      * @notice Determines if supply change warrants a response
-     * @dev FIX #2: Validates data lengths before decoding to prevent reverts
-     * @param data Array of encoded CollectOutput data [current, previous]
-     * @return shouldRespond True if supply changed beyond threshold
-     * @return responseData Encoded threshold data if responding
+     * @dev Planner-safe: checks lengths before decoding to prevent reverts
      */
     function shouldRespond(bytes[] calldata data) 
         external 
-        view
+        pure
         override 
         returns (bool, bytes memory) 
     {
-        // Validate we have at least 2 data points
+        // Guard against empty data (planner-safe)
         if (data.length < 2) {
             return (false, bytes(""));
         }
         
-        // Validate both data blobs have content before decoding
-        // FIX #2: Check lengths to prevent decode reverts
+        // Guard against empty blobs before decoding (planner-safe)
         if (data[0].length == 0 || data[1].length == 0) {
             return (false, bytes(""));
         }
         
-        // Optional: Check exact expected length (32 bytes for single uint256)
+        // Check exact expected length (32 bytes for single uint256 in struct)
         if (data[0].length != 32 || data[1].length != 32) {
             return (false, bytes(""));
         }
@@ -111,6 +109,7 @@ contract FeeAnomalyTrap is ITrap {
             return (true, abi.encode(curr.supply, prev.supply, change));
         }
         
+        // Return empty bytes when not triggering (per team feedback)
         return (false, bytes(""));
     }
 }
