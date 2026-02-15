@@ -1,0 +1,21 @@
+# Drosera Trap Configuration for FeeAnomalyTrap
+# Deploy with: DROSERA_PRIVATE_KEY=0x... drosera apply
+
+[fee_anomaly_trap]
+path = "src/FeeAnomalyTrap.sol:FeeAnomalyTrap"
+
+# NO constructor_args - team feedback says Drosera doesn't support them reliably
+# Token address and threshold are HARDCODED in the contract
+# To monitor a different token, edit the contract constants and redeploy
+
+# Hoodi Testnet (Drosera's testnet)
+chain_id = 17071
+rpc_url = "https://rpc.hoodi.drosera.io"
+
+# No response contract for now - just monitoring
+# Add these if you want automated responses:
+# response_contract = "0xYourResponseContractAddress"
+# response_function = "handleSupplyAnomaly(uint256,uint256,uint256)"
+
+whitelist = []
+private_trap = false
