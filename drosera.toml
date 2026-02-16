@@ -3,7 +3,7 @@ drosera_rpc = "https://relay.hoodi.drosera.io"
 eth_chain_id = 560048
 drosera_address = "0x91cB447BaFc6e0EA0F4Fe056F5a9b1F14bb06e5D"
 
-# Keep your first trap as-is
+# Trap 1: RelayerBondMonitor
 [traps.relayer_bond_monitor]
 path = "out/RelayerBondMonitorFinal.sol/RelayerBondMonitorFinal.json"
 response_contract = "0x25e2cef36020a736cf8a4d2cadd2ebe3940f4608"
@@ -13,14 +13,18 @@ min_number_of_operators = 1
 max_number_of_operators = 3
 block_sample_size = 1
 private = false
+whitelist = ["0x1fc4482632BDE9F7Ba4dE43b96E2859866769dA8"]
 address = "0xb75c2a971abEa4370614edAe64049F6124464B14"
 
-# UPDATE the second trap to use FeeAnomalyTrap
-[traps.fee_anomaly_trap]
-path = "out/FeeAnomalyTrap.sol/FeeAnomalyTrap.json"
+# Trap 2: DiscordNameTrap (Workshop 3 - CORRECT response function)
+[traps.discord_name_trap]
+path = "out/DiscordNameTrap.sol/DiscordNameTrap.json"
+response_contract = "0x25E2CeF36020A736CF8a4D2cAdD2EBE3940F4608"
+response_function = "respondWithDiscordName(string)"
 cooldown_period_blocks = 50
 min_number_of_operators = 1
 max_number_of_operators = 3
 block_sample_size = 1
 private = false
-address = "0xA6496A9a87e7e502393F34099602f67deBd804cB"  # Reuse existing trap address
+whitelist = ["0x1fc4482632BDE9F7Ba4dE43b96E2859866769dA8"]
+address = "0xA6496A9a87e7e502393F34099602f67deBd804cB"
