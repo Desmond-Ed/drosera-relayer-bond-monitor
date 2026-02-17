@@ -16,11 +16,11 @@ private = false
 whitelist = ["0x1fc4482632BDE9F7Ba4dE43b96E2859866769dA8"]
 address = "0xb75c2a971abEa4370614edAe64049F6124464B14"
 
-# Trap 2: DiscordNameTrap (Workshop 3 - CORRECT response function)
+# Trap 2: DiscordNameTrap (WORKING VERSION)
 [traps.discord_name_trap]
 path = "out/DiscordNameTrap.sol/DiscordNameTrap.json"
 response_contract = "0x25E2CeF36020A736CF8a4D2cAdD2EBE3940F4608"
-response_function = "respondWithDiscordName(string)"
+response_function = "executeResponse(bytes)"
 cooldown_period_blocks = 50
 min_number_of_operators = 1
 max_number_of_operators = 3
